@@ -1,386 +1,217 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ta">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J.A.R.V.I.S. | Operating System</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
+    <title>உறுப்பினர் பதிவு - சமத்துவ மக்கள் கட்சி</title>
     <style>
-        :root {
-            --neon-cyan: #00f3ff;
-            --neon-blue: #0066ff;
-            --holo-glow: rgba(0, 243, 255, 0.2);
-            --glass-bg: rgba(2, 6, 23, 0.65);
-        }
-
         body {
-            background-color: #020617;
-            color: #e2e8f0;
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
+            font-family: sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #fdfdf0; /* மிக வெளிர் மஞ்சள் பின்னணி */
+            color: #333;
         }
 
-        /* Futuristic Scanline and Vignette Overlay */
-        .cinematic-overlay {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            background: 
-                radial-gradient(circle at center, transparent 30%, rgba(2,6,23,0.95) 100%),
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 100%, 100% 4px, 6px 100%;
-            z-index: 10;
+        header {
+            background-color: #ffffff; /* வெள்ளை பின்னணி */
+            padding: 20px 0;
+            border-bottom: 4px solid #ff0000; /* சிவப்பு நிறக் கோடு */
         }
 
-        /* Glassmorphism utility */
-        .glass-hologram {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 243, 255, 0.2);
-            box-shadow: 0 0 20px var(--holo-glow), inset 0 0 15px rgba(0, 243, 255, 0.1);
-            transition: all 0.5s ease-out;
-            opacity: 0;
-            transform: translateY(20px);
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
-        .glass-hologram.visible {
-            opacity: 1;
-            transform: translateY(0);
+        .header-logo {
+            height: 100px;
+            width: auto;
+            margin-right: 20px;
+            border-radius: 10px;
+            border: 4px solid #ffd700; /* தங்கம்/மஞ்சள் நிற பார்டர் */
         }
 
-        .text-neon {
-            color: var(--neon-cyan);
-            text-shadow: 0 0 8px var(--neon-cyan), 0 0 20px var(--neon-blue);
+        .header-title {
+            font-size: 2.8em;
+            color: #ff0000; /* சிவப்பு நிற தலைப்பு */
+            margin: 0;
+            font-weight: bold;
         }
 
-        /* Audio Visualizer Bars */
-        .visualizer-bar {
-            width: 3px;
-            height: 4px;
-            background: var(--neon-cyan);
-            border-radius: 9999px;
-            box-shadow: 0 0 8px var(--neon-cyan);
-            transition: height 0.1s ease;
-            opacity: 0.3;
+        .main-content {
+            max-width: 650px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        .active-visualizer .visualizer-bar {
-            opacity: 1;
-            animation: pulse-bar 0.5s infinite alternate;
+        .form-heading {
+            font-size: 2em;
+            color: #ff0000; /* சிவப்பு நிற பாரம் தலைப்பு */
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ffd700; /* மஞ்சள் நிற கீழ்க்கோடு */
         }
 
-        @keyframes pulse-bar {
-            0% { height: 6px; }
-            100% { height: 24px; }
+        .form-group {
+            margin-bottom: 20px;
         }
 
-        #canvas-container {
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type=text],
+        input[type=tel],
+        input[type=number],
+        textarea,
+        select {
             width: 100%;
-            height: 55vh;
-            position: relative;
-            z-index: 20;
+            padding: 12px 15px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box; /* பேடிங் உள்ளடக்கத்தை பாதிக்காது */
+            font-size: 1em;
         }
 
-        /* Ambient glowing background behind the sphere */
-        .core-glow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 350px;
-            height: 350px;
-            background: #00f3ff;
-            opacity: 0.1;
-            border-radius: 50%;
-            filter: blur(80px);
-            animation: breathe 4s infinite alternate;
-            pointer-events: none;
+        textarea {
+            resize: vertical;
+            height: 100px;
         }
 
-        @keyframes breathe {
-            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.05; }
-            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.15; }
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #ff0000; /* கவனம் செலுத்தும்போது சிவப்பு பார்டர் */
+            outline: none;
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.2);
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 15px;
+            background-color: #ff0000; /* சிவப்பு பின்னணி */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-button:hover {
+            background-color: #d10000; /* இருண்ட சிவப்பு நிறம் */
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            background-color: #f4f4f4;
+            color: #777;
+            border-top: 1px solid #ddd;
+        }
+
+        /* ஃபோன் ரெஸ்பான்சிவ் வடிவமைப்பு */
+        @media screen and (max-width: 600px) {
+            .header-title {
+                font-size: 2em;
+            }
+            .header-logo {
+                height: 70px;
+            }
+            .main-content {
+                padding: 20px;
+                margin: 20px;
+            }
+            .form-heading {
+                font-size: 1.6em;
+            }
         }
     </style>
 </head>
-<body class="relative min-h-screen w-screen flex flex-col items-center justify-between p-8">
+<body>
 
-    <div class="cinematic-overlay"></div>
-
-    <div id="error-banner" class="hidden absolute top-0 left-0 w-full bg-red-900/90 text-red-200 text-center p-4 z-50 font-bold tracking-widest">
-        CRITICAL ERROR: BROWSER MEDIA ENGINE DOES NOT SUPPORT WEB SPEECH PROTOCOLS. PLEASE USE CHROME/EDGE.
+<header>
+    <div class="header-container">
+        <!-- குறிப்பு: படத்தில் உள்ள தலைவரின் புகைப்படத்தைப் பயன்படுத்தவும் -->
+        <img src="1000088750.jpg" alt="சமத்துவ மக்கள் கட்சித் தலைவர்" class="header-logo">
+        <h1 class="header-title">சமத்துவ மக்கள் கட்சி</h1>
     </div>
+</header>
 
-    <header class="w-full flex justify-between items-center z-30 text-[11px] text-[#00f3ff] opacity-80 border-b border-[#00f3ff]/30 pb-4">
-        <div class="flex items-center gap-3">
-            <span class="tracking-widest font-bold">SYSTEM: CORE_OS_V4.92</span>
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        </div>
-        <div class="text-right tracking-wider uppercase">
-            Status: <span id="status-text" class="text-white">IDLE</span>
-        </div>
-    </header>
-
-    <main class="flex-1 w-full flex flex-col items-center justify-center z-30 max-w-xl relative">
-        <div class="core-glow"></div>
-        <div id="canvas-container"></div>
+<main>
+    <div class="main-content">
+        <h2 class="form-heading">உறுப்பினர் பதிவு</h2>
         
-        <div class="text-center mt-2 pointer-events-none">
-            <h2 id="state-indicator" class="text-xs uppercase tracking-[0.3em] text-slate-400 mb-2 transition-colors">
-                System Standby
-            </h2>
-            <div id="visualizer" class="flex items-center justify-center gap-[4px] h-8">
-                </div>
-        </div>
-    </main>
+        <!-- Web3 Forms API மூலம் மின்னஞ்சலுக்கு தரவை அனுப்பும் பாரம் -->
+        <form action="https://api.web3forms.com/submit" method="POST">
+            
+            <!-- உங்கள் Web3 Forms API Key-ஐ இங்கே மாற்றவும் -->
+            <input type="hidden" name="access_key" value="[YOUR_API_KEY_HERE]">
+            
+            <!-- பாரம் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டால் செல்லும் பக்கம் -->
+            <input type="hidden" name="redirect" value="https://example.com/thank-you">
 
-    <div class="w-full max-w-5xl px-6 grid grid-cols-1 md:grid-cols-2 gap-6 pointer-events-none z-30 mb-8">
-        
-        <div id="input-panel" class="glass-hologram p-5 rounded-tl-2xl rounded-br-2xl flex flex-col relative overflow-hidden">
-            <div class="text-[10px] uppercase tracking-widest text-[#00f3ff] opacity-60 mb-2 flex justify-between">
-                <span>User Audio Input Stream</span>
-                <span class="animate-pulse text-red-400">● Live</span>
+            <div class="form-group">
+                <label for="name">பெயர்</label>
+                <input type="text" id="name" name="name" placeholder="உங்கள் பெயர்" required>
             </div>
-            <p id="user-transcript" class="text-slate-300 font-mono text-sm leading-relaxed">&ldquo;...&rdquo;</p>
-            <div class="absolute right-0 bottom-0 w-8 h-[2px] bg-[#00f3ff]"></div>
-        </div>
 
-        <div id="output-panel" class="glass-hologram p-5 rounded-tr-2xl rounded-bl-2xl border-l-2 border-[#00f3ff] flex flex-col relative visible">
-            <div class="text-[10px] uppercase tracking-widest text-emerald-400 opacity-70 mb-2 flex justify-between">
-                <span>J.A.R.V.I.S Neural Response</span>
-                <span id="ai-state-text">STATE: IDLE</span>
+            <div class="form-group">
+                <label for="address">முகவரி</label>
+                <textarea id="address" name="address" placeholder="உங்கள் முழு முகவரி" required></textarea>
             </div>
-            <p id="ai-response" class="text-neon font-mono text-sm leading-relaxed">
-                Systems online. Say 'Hey Jarvis' to initialize vocal subroutines.
-            </p>
-            <div class="absolute left-0 top-0 w-[2px] h-6 bg-[#00f3ff]"></div>
-        </div>
 
+            <div class="form-group">
+                <label for="phone">தொலைபேசி எண்</label>
+                <input type="tel" id="phone" name="phone" placeholder="உங்கள் தொலைபேசி எண்" required pattern="[0-9]{10}">
+            </div>
+
+            <div class="form-group">
+                <label for="position">பதவி/பொறுப்பு</label>
+                <input type="text" id="position" name="position" placeholder="உதாரணம்: உறுப்பினர், தொகுதிச் செயலாளர்">
+            </div>
+
+            <div class="form-group">
+                <label for="district">மாவட்டம்</label>
+                <select id="district" name="district" required>
+                    <option value="" disabled selected>உங்கள் மாவட்டத்தைத் தேர்ந்தெடுக்கவும்</option>
+                    <option value="chennai">சென்னை</option>
+                    <option value="coimbatore">கோயம்புத்தூர்</option>
+                    <option value="madurai">மதுரை</option>
+                    <option value="trichy">திருச்சிராப்பள்ளி</option>
+                    <!-- மற்ற மாவட்டங்களை இங்கே சேர்க்கலாம் -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="pincode">அஞ்சல் குறியீடு</label>
+                <input type="number" id="pincode" name="pincode" placeholder="600001" required pattern="[0-9]{6}">
+            </div>
+
+            <button type="submit" class="submit-button">சமர்ப்பிக்க</button>
+        </form>
     </div>
+</main>
 
-    <footer class="w-full flex justify-between items-center z-30 text-[9px] text-slate-500 border-t border-[#00f3ff]/20 pt-4 pointer-events-none">
-        <div>LOC: 40.7128° N, 74.0060° W</div>
-        <div class="animate-pulse text-[#00f3ff]/50">SECURE ENCRYPTED QUANTUM LINK</div>
-        <div>GRID REF: AREA_51_MAIN</div>
-    </footer>
+<footer>
+    <p>&copy; 2024 சமத்துவ மக்கள் கட்சி. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.</p>
+</footer>
 
-    <script>
-        // ==========================================
-        // 1. THREE.JS 3D CINEMATIC CORE
-        // ==========================================
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        container.appendChild(renderer.domElement);
-
-        // Core Quantum Sphere (Wireframe)
-        const coreGeometry = new THREE.IcosahedronGeometry(1, 2);
-        const coreMaterial = new THREE.MeshBasicMaterial({ color: 0x00f3ff, wireframe: true });
-        const coreSphere = new THREE.Mesh(coreGeometry, coreMaterial);
-        scene.add(coreSphere);
-
-        // Outer Containment Ring 1
-        const ring1Geo = new THREE.TorusGeometry(1.6, 0.02, 16, 100);
-        const ring1Mat = new THREE.MeshBasicMaterial({ color: 0x0066ff, wireframe: true, transparent: true, opacity: 0.6 });
-        const ring1 = new THREE.Mesh(ring1Geo, ring1Mat);
-        scene.add(ring1);
-
-        // Outer Containment Ring 2
-        const ring2Geo = new THREE.TorusGeometry(1.8, 0.01, 8, 100);
-        const ring2Mat = new THREE.MeshBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.3 });
-        const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
-        ring2.rotation.x = Math.PI / 2;
-        scene.add(ring2);
-
-        camera.position.z = 3.5;
-
-        // Resize handler
-        window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        });
-
-        // ==========================================
-        // 2. STATE MANAGEMENT & UI
-        // ==========================================
-        let aiState = 'idle'; // 'idle', 'listening', 'processing', 'speaking'
-        
-        // DOM Elements
-        const statusText = document.getElementById('status-text');
-        const stateIndicator = document.getElementById('state-indicator');
-        const aiStateText = document.getElementById('ai-state-text');
-        const visualizer = document.getElementById('visualizer');
-        const inputPanel = document.getElementById('input-panel');
-        const outputPanel = document.getElementById('output-panel');
-        const userTranscript = document.getElementById('user-transcript');
-        const aiResponseText = document.getElementById('ai-response');
-
-        // Generate Visualizer Bars
-        for(let i = 0; i < 24; i++) {
-            const bar = document.createElement('div');
-            bar.className = 'visualizer-bar';
-            bar.style.animationDelay = `${Math.random() * 0.5}s`;
-            visualizer.appendChild(bar);
-        }
-
-        function updateUIState(newState) {
-            aiState = newState;
-            statusText.innerText = newState.toUpperCase();
-            aiStateText.innerText = `STATE: ${newState.toUpperCase()}`;
-            
-            if (newState === 'idle') {
-                stateIndicator.innerText = "System Standby";
-                stateIndicator.style.color = "#94a3b8"; // slate-400
-                visualizer.classList.remove('active-visualizer');
-            } else if (newState === 'listening') {
-                stateIndicator.innerText = "Listening Input";
-                stateIndicator.style.color = "#ef4444"; // red-500
-                visualizer.classList.add('active-visualizer');
-            } else if (newState === 'processing') {
-                stateIndicator.innerText = "Processing Datastream";
-                stateIndicator.style.color = "#f59e0b"; // amber-500
-                visualizer.classList.add('active-visualizer');
-            } else if (newState === 'speaking') {
-                stateIndicator.innerText = "Transmitting Audio";
-                stateIndicator.style.color = "#00f3ff"; // neon-cyan
-                visualizer.classList.add('active-visualizer');
-            }
-        }
-
-        // ==========================================
-        // 3. ANIMATION LOOP (3D Physics)
-        // ==========================================
-        function animate() {
-            requestAnimationFrame(animate);
-
-            const time = Date.now() * 0.001;
-
-            // Base rotations
-            coreSphere.rotation.y += 0.01;
-            coreSphere.rotation.x += 0.005;
-            ring1.rotation.z -= 0.005;
-            ring1.rotation.y += 0.008;
-
-            // Pulse scaling based on state
-            let targetScale = 1.0;
-            if (aiState === "listening") targetScale = 1.15 + Math.sin(time * 15) * 0.05;
-            if (aiState === "speaking") targetScale = 1.25 + Math.sin(time * 22) * 0.12;
-
-            // Smooth interpolation (Lerp) for scaling
-            coreSphere.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
-
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // ==========================================
-        // 4. VOICE RECOGNITION & SYNTHESIS API
-        // ==========================================
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const synth = window.speechSynthesis;
-
-        if (!SpeechRecognition || !synth) {
-            document.getElementById('error-banner').classList.remove('hidden');
-        } else {
-            const recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
-
-            recognition.onresult = (event) => {
-                const lastResultIndex = event.results.length - 1;
-                const text = event.results[lastResultIndex][0].transcript.trim().toLowerCase();
-
-                if (aiState === 'idle' && text.includes("hey jarvis")) {
-                    updateUIState('listening');
-                    // In a real app, play an activation sound here
-                } 
-                else if (aiState === 'listening') {
-                    // Show Input Panel
-                    userTranscript.innerText = `"${text}"`;
-                    inputPanel.classList.add('visible');
-                    
-                    updateUIState('processing');
-
-                    // Simulate processing time
-                    setTimeout(() => {
-                        handleAIResponse(text);
-                    }, 1200);
-                }
-            };
-
-            recognition.onerror = () => updateUIState('idle');
-            recognition.onend = () => recognition.start(); // Keep listening forever
-            
-            // Start the engine
-            recognition.start();
-        }
-
-        // ==========================================
-        // 5. AI RESPONSE LOGIC
-        // ==========================================
-        function handleAIResponse(text) {
-            let reply = `Processing request regarding: "${text}". Query analyzed. Maintaining baseline operations.`;
-
-            if (text.includes("status") || text.includes("how are you")) {
-                reply = "All systems operational. Mainframe core running at optimum temperatures. How can I assist you, sir?";
-            } else if (text.includes("who are you")) {
-                reply = "I am J.A.R.V.I.S., an advanced neural processing interface designed to manage local automation arrays.";
-            } else if (text.includes("time") || text.includes("date")) {
-                reply = `Checking chronological arrays. Current timestamp registers as ${new Date().toLocaleTimeString()}.`;
-            } else if (text.includes("thank you") || text.includes("thanks")) {
-                reply = "You are very welcome, sir. Standing by.";
-            }
-
-            // Update UI Output
-            aiResponseText.innerText = reply;
-            outputPanel.classList.add('visible');
-
-            // Speak the response
-            speak(reply);
-        }
-
-        function speak(text) {
-            if (synth.speaking) synth.cancel();
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            
-            // Try to find a good robotic/British voice
-            const voices = synth.getVoices();
-            const premiumVoice = voices.find(v => v.name.includes("Google UK English Male") || v.name.includes("Natural"));
-            if (premiumVoice) utterance.voice = premiumVoice;
-
-            utterance.pitch = 0.85; // Deepen voice
-            utterance.rate = 1.05;
-
-            utterance.onstart = () => updateUIState('speaking');
-            utterance.onend = () => {
-                updateUIState('idle');
-                // Hide panels after 5 seconds of silence
-                setTimeout(() => {
-                    if(aiState === 'idle') {
-                        inputPanel.classList.remove('visible');
-                    }
-                }, 5000);
-            };
-
-            synth.speak(utterance);
-        }
-
-        // Initialize voices (Chrome requires this to load them properly)
-        speechSynthesis.onvoiceschanged = () => synth.getVoices();
-    </script>
 </body>
 </html>
