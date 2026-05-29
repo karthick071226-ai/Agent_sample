@@ -3,318 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS - Voice Assistant</title>
+    <title>J.A.R.V.I.S. | Operating System</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <style>
-        * {
-            box-sizing: border-box;
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-blue: #0066ff;
+            --holo-glow: rgba(0, 243, 255, 0.2);
+            --glass-bg: rgba(2, 6, 23, 0.65);
+        }
+
+        body {
+            background-color: #020617;
+            color: #e2e8f0;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
             margin: 0;
             padding: 0;
         }
 
-        body {
-            background-color: #05050a;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            font-family: 'Courier New', Courier, monospace;
-        }
-
-        /* Futuristic Background Grid */
-        .grid {
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background-image: 
-                linear-gradient(rgba(0, 242, 254, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 242, 254, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            transform: perspective(500px) rotateX(60deg);
-            animation: grid-move 20s linear infinite;
-            z-index: 1;
-        }
-
-        @keyframes grid-move {
-            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
-            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
-        }
-
-        /* Container for Jarvis Orb */
-        .assistant-container {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        /* The Jarvis Ball */
-        .jarvis-orb {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: radial-gradient(circle, #00f2fe 0%, #4facfe 70%, #000 100%);
-            box-shadow: 0 0 30px rgba(0, 242, 254, 0.6),
-                        inset 0 0 20px rgba(255, 255, 255, 0.5);
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        /* Core inner glow */
-        .jarvis-orb::after {
-            content: '';
-            position: absolute;
-            top: 15%;
-            left: 15%;
-            width: 70%;
-            height: 70%;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 80%);
-        }
-
-        /* Idle State Pulse */
-        .status-idle {
-            animation: pulse-idle 3s infinite ease-in-out;
-        }
-
-        /* Listening State Pulse */
-        .status-listening {
-            animation: pulse-listening 1s infinite ease-in-out;
-            background: radial-gradient(circle, #00f2fe 0%, #0052d4 70%, #000 100%);
-            box-shadow: 0 0 50px rgba(0, 242, 254, 0.9);
-        }
-
-        /* Speaking State Animation */
-        .status-speaking {
-            animation: speaking-wave 0.15s infinite linear;
-            background: radial-gradient(circle, #00f2fe 0%, #7f00ff 70%, #000 100%);
-            box-shadow: 0 0 60px rgba(127, 0, 255, 0.8);
-        }
-
-        /* Thinking State Animation */
-        .status-thinking {
-            animation: thinking-spin 1.5s infinite linear;
-            border: 4px dashed #00f2fe;
-        }
-
-        /* Animations */
-        @keyframes pulse-idle {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(0, 242, 254, 0.5); }
-            50% { transform: scale(1.05); box-shadow: 0 0 45px rgba(0, 242, 254, 0.8); }
-        }
-
-        @keyframes pulse-listening {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(0, 242, 254, 0.6); }
-            50% { transform: scale(1.15); box-shadow: 0 0 60px rgba(0, 242, 254, 1); }
-        }
-
-        @keyframes speaking-wave {
-            0% { transform: scale(1.05) translate(1px, 1px); }
-            50% { transform: scale(1.08) translate(-1px, -1px); }
-            100% { transform: scale(1.05) translate(1px, -1px); }
-        }
-
-        @keyframes thinking-spin {
-            0% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1) rotate(360deg); }
-        }
-
-        /* Click prompt overlay */
-        #start-prompt {
-            position: absolute;
-            color: rgba(0, 242, 254, 0.6);
-            bottom: -40px;
-            font-size: 12px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+        /* Futuristic Scanline and Vignette Overlay */
+        .cinematic-overlay {
+            position: fixed;
+            inset: 0;
             pointer-events: none;
-            white-space: nowrap;
+            background: 
+                radial-gradient(circle at center, transparent 30%, rgba(2,6,23,0.95) 100%),
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 100%, 100% 4px, 6px 100%;
+            z-index: 10;
+        }
+
+        /* Glassmorphism utility */
+        .glass-hologram {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 20px var(--holo-glow), inset 0 0 15px rgba(0, 243, 255, 0.1);
+            transition: all 0.5s ease-out;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .glass-hologram.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .text-neon {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px var(--neon-cyan), 0 0 20px var(--neon-blue);
+        }
+
+        /* Audio Visualizer Bars */
+        .visualizer-bar {
+            width: 3px;
+            height: 4px;
+            background: var(--neon-cyan);
+            border-radius: 9999px;
+            box-shadow: 0 0 8px var(--neon-cyan);
+            transition: height 0.1s ease;
+            opacity: 0.3;
+        }
+
+        .active-visualizer .visualizer-bar {
+            opacity: 1;
+            animation: pulse-bar 0.5s infinite alternate;
+        }
+
+        @keyframes pulse-bar {
+            0% { height: 6px; }
+            100% { height: 24px; }
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 55vh;
+            position: relative;
+            z-index: 20;
+        }
+
+        /* Ambient glowing background behind the sphere */
+        .core-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px;
+            height: 350px;
+            background: #00f3ff;
+            opacity: 0.1;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: breathe 4s infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes breathe {
+            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.05; }
+            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.15; }
         }
     </style>
 </head>
-<body>
+<body class="relative min-h-screen w-screen flex flex-col items-center justify-between p-8">
 
-    <div class="grid"></div>
+    <div class="cinematic-overlay"></div>
 
-    <div class="assistant-container" id="assistant-trigger">
-        <div class="jarvis-orb status-idle" id="jarvis-ball"></div>
-        <div id="start-prompt">Click Orb to Initialize Jarvis</div>
+    <div id="error-banner" class="hidden absolute top-0 left-0 w-full bg-red-900/90 text-red-200 text-center p-4 z-50 font-bold tracking-widest">
+        CRITICAL ERROR: BROWSER MEDIA ENGINE DOES NOT SUPPORT WEB SPEECH PROTOCOLS. PLEASE USE CHROME/EDGE.
     </div>
 
+    <header class="w-full flex justify-between items-center z-30 text-[11px] text-[#00f3ff] opacity-80 border-b border-[#00f3ff]/30 pb-4">
+        <div class="flex items-center gap-3">
+            <span class="tracking-widest font-bold">SYSTEM: CORE_OS_V4.92</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        </div>
+        <div class="text-right tracking-wider uppercase">
+            Status: <span id="status-text" class="text-white">IDLE</span>
+        </div>
+    </header>
+
+    <main class="flex-1 w-full flex flex-col items-center justify-center z-30 max-w-xl relative">
+        <div class="core-glow"></div>
+        <div id="canvas-container"></div>
+        
+        <div class="text-center mt-2 pointer-events-none">
+            <h2 id="state-indicator" class="text-xs uppercase tracking-[0.3em] text-slate-400 mb-2 transition-colors">
+                System Standby
+            </h2>
+            <div id="visualizer" class="flex items-center justify-center gap-[4px] h-8">
+                </div>
+        </div>
+    </main>
+
+    <div class="w-full max-w-5xl px-6 grid grid-cols-1 md:grid-cols-2 gap-6 pointer-events-none z-30 mb-8">
+        
+        <div id="input-panel" class="glass-hologram p-5 rounded-tl-2xl rounded-br-2xl flex flex-col relative overflow-hidden">
+            <div class="text-[10px] uppercase tracking-widest text-[#00f3ff] opacity-60 mb-2 flex justify-between">
+                <span>User Audio Input Stream</span>
+                <span class="animate-pulse text-red-400">● Live</span>
+            </div>
+            <p id="user-transcript" class="text-slate-300 font-mono text-sm leading-relaxed">&ldquo;...&rdquo;</p>
+            <div class="absolute right-0 bottom-0 w-8 h-[2px] bg-[#00f3ff]"></div>
+        </div>
+
+        <div id="output-panel" class="glass-hologram p-5 rounded-tr-2xl rounded-bl-2xl border-l-2 border-[#00f3ff] flex flex-col relative visible">
+            <div class="text-[10px] uppercase tracking-widest text-emerald-400 opacity-70 mb-2 flex justify-between">
+                <span>J.A.R.V.I.S Neural Response</span>
+                <span id="ai-state-text">STATE: IDLE</span>
+            </div>
+            <p id="ai-response" class="text-neon font-mono text-sm leading-relaxed">
+                Systems online. Say 'Hey Jarvis' to initialize vocal subroutines.
+            </p>
+            <div class="absolute left-0 top-0 w-[2px] h-6 bg-[#00f3ff]"></div>
+        </div>
+
+    </div>
+
+    <footer class="w-full flex justify-between items-center z-30 text-[9px] text-slate-500 border-t border-[#00f3ff]/20 pt-4 pointer-events-none">
+        <div>LOC: 40.7128° N, 74.0060° W</div>
+        <div class="animate-pulse text-[#00f3ff]/50">SECURE ENCRYPTED QUANTUM LINK</div>
+        <div>GRID REF: AREA_51_MAIN</div>
+    </footer>
+
     <script>
+        // ==========================================
+        // 1. THREE.JS 3D CINEMATIC CORE
+        // ==========================================
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(renderer.domElement);
+
+        // Core Quantum Sphere (Wireframe)
+        const coreGeometry = new THREE.IcosahedronGeometry(1, 2);
+        const coreMaterial = new THREE.MeshBasicMaterial({ color: 0x00f3ff, wireframe: true });
+        const coreSphere = new THREE.Mesh(coreGeometry, coreMaterial);
+        scene.add(coreSphere);
+
+        // Outer Containment Ring 1
+        const ring1Geo = new THREE.TorusGeometry(1.6, 0.02, 16, 100);
+        const ring1Mat = new THREE.MeshBasicMaterial({ color: 0x0066ff, wireframe: true, transparent: true, opacity: 0.6 });
+        const ring1 = new THREE.Mesh(ring1Geo, ring1Mat);
+        scene.add(ring1);
+
+        // Outer Containment Ring 2
+        const ring2Geo = new THREE.TorusGeometry(1.8, 0.01, 8, 100);
+        const ring2Mat = new THREE.MeshBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.3 });
+        const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+        ring2.rotation.x = Math.PI / 2;
+        scene.add(ring2);
+
+        camera.position.z = 3.5;
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        // ==========================================
+        // 2. STATE MANAGEMENT & UI
+        // ==========================================
+        let aiState = 'idle'; // 'idle', 'listening', 'processing', 'speaking'
+        
+        // DOM Elements
+        const statusText = document.getElementById('status-text');
+        const stateIndicator = document.getElementById('state-indicator');
+        const aiStateText = document.getElementById('ai-state-text');
+        const visualizer = document.getElementById('visualizer');
+        const inputPanel = document.getElementById('input-panel');
+        const outputPanel = document.getElementById('output-panel');
+        const userTranscript = document.getElementById('user-transcript');
+        const aiResponseText = document.getElementById('ai-response');
+
+        // Generate Visualizer Bars
+        for(let i = 0; i < 24; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'visualizer-bar';
+            bar.style.animationDelay = `${Math.random() * 0.5}s`;
+            visualizer.appendChild(bar);
+        }
+
+        function updateUIState(newState) {
+            aiState = newState;
+            statusText.innerText = newState.toUpperCase();
+            aiStateText.innerText = `STATE: ${newState.toUpperCase()}`;
+            
+            if (newState === 'idle') {
+                stateIndicator.innerText = "System Standby";
+                stateIndicator.style.color = "#94a3b8"; // slate-400
+                visualizer.classList.remove('active-visualizer');
+            } else if (newState === 'listening') {
+                stateIndicator.innerText = "Listening Input";
+                stateIndicator.style.color = "#ef4444"; // red-500
+                visualizer.classList.add('active-visualizer');
+            } else if (newState === 'processing') {
+                stateIndicator.innerText = "Processing Datastream";
+                stateIndicator.style.color = "#f59e0b"; // amber-500
+                visualizer.classList.add('active-visualizer');
+            } else if (newState === 'speaking') {
+                stateIndicator.innerText = "Transmitting Audio";
+                stateIndicator.style.color = "#00f3ff"; // neon-cyan
+                visualizer.classList.add('active-visualizer');
+            }
+        }
+
+        // ==========================================
+        // 3. ANIMATION LOOP (3D Physics)
+        // ==========================================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = Date.now() * 0.001;
+
+            // Base rotations
+            coreSphere.rotation.y += 0.01;
+            coreSphere.rotation.x += 0.005;
+            ring1.rotation.z -= 0.005;
+            ring1.rotation.y += 0.008;
+
+            // Pulse scaling based on state
+            let targetScale = 1.0;
+            if (aiState === "listening") targetScale = 1.15 + Math.sin(time * 15) * 0.05;
+            if (aiState === "speaking") targetScale = 1.25 + Math.sin(time * 22) * 0.12;
+
+            // Smooth interpolation (Lerp) for scaling
+            coreSphere.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // ==========================================
+        // 4. VOICE RECOGNITION & SYNTHESIS API
+        // ==========================================
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const jarvisBall = document.getElementById('jarvis-ball');
-        const trigger = document.getElementById('assistant-trigger');
-        const startPrompt = document.getElementById('start-prompt');
+        const synth = window.speechSynthesis;
 
-        let recognition;
-        let isJarvisActive = false;
-
-        if (!SpeechRecognition) {
-            alert("Your browser does not support Web Speech API. Please use Google Chrome.");
+        if (!SpeechRecognition || !synth) {
+            document.getElementById('error-banner').classList.remove('hidden');
         } else {
-            recognition = new SpeechRecognition();
+            const recognition = new SpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = false;
             recognition.lang = 'en-US';
 
-            recognition.onstart = () => {
-                setStatus('listening');
-            };
+            recognition.onresult = (event) => {
+                const lastResultIndex = event.results.length - 1;
+                const text = event.results[lastResultIndex][0].transcript.trim().toLowerCase();
 
-            recognition.onerror = (event) => {
-                console.error("Speech recognition error", event.error);
-                setStatus('idle');
-            };
+                if (aiState === 'idle' && text.includes("hey jarvis")) {
+                    updateUIState('listening');
+                    // In a real app, play an activation sound here
+                } 
+                else if (aiState === 'listening') {
+                    // Show Input Panel
+                    userTranscript.innerText = `"${text}"`;
+                    inputPanel.classList.add('visible');
+                    
+                    updateUIState('processing');
 
-            recognition.onend = () => {
-                if (isJarvisActive) {
-                    recognition.start();
-                } else {
-                    setStatus('idle');
+                    // Simulate processing time
+                    setTimeout(() => {
+                        handleAIResponse(text);
+                    }, 1200);
                 }
             };
 
-            recognition.onresult = async (event) => {
-                const current = event.resultIndex;
-                const transcript = event.results[current][0].transcript.toLowerCase().trim();
-                
-                recognition.stop(); // Stop listening while processing
-                await handleCommand(transcript);
-            };
+            recognition.onerror = () => updateUIState('idle');
+            recognition.onend = () => recognition.start(); // Keep listening forever
+            
+            // Start the engine
+            recognition.start();
         }
 
-        trigger.addEventListener('click', () => {
-            if (!isJarvisActive) {
-                isJarvisActive = true;
-                startPrompt.style.display = 'none';
-                speak("Jarvis systems online. How can I assist you?");
-            }
-        });
+        // ==========================================
+        // 5. AI RESPONSE LOGIC
+        // ==========================================
+        function handleAIResponse(text) {
+            let reply = `Processing request regarding: "${text}". Query analyzed. Maintaining baseline operations.`;
 
-        function setStatus(state) {
-            jarvisBall.className = 'jarvis-orb'; 
-            if (state === 'listening') jarvisBall.classList.add('status-listening');
-            else if (state === 'speaking') jarvisBall.classList.add('status-speaking');
-            else if (state === 'thinking') jarvisBall.classList.add('status-thinking');
-            else jarvisBall.classList.add('status-idle');
+            if (text.includes("status") || text.includes("how are you")) {
+                reply = "All systems operational. Mainframe core running at optimum temperatures. How can I assist you, sir?";
+            } else if (text.includes("who are you")) {
+                reply = "I am J.A.R.V.I.S., an advanced neural processing interface designed to manage local automation arrays.";
+            } else if (text.includes("time") || text.includes("date")) {
+                reply = `Checking chronological arrays. Current timestamp registers as ${new Date().toLocaleTimeString()}.`;
+            } else if (text.includes("thank you") || text.includes("thanks")) {
+                reply = "You are very welcome, sir. Standing by.";
+            }
+
+            // Update UI Output
+            aiResponseText.innerText = reply;
+            outputPanel.classList.add('visible');
+
+            // Speak the response
+            speak(reply);
         }
 
         function speak(text) {
-            return new Promise((resolve) => {
-                const utterance = new SpeechSynthesisUtterance(text);
-                const voices = window.speechSynthesis.getVoices();
-                const selectedVoice = voices.find(voice => voice.name.includes('Google US English') || voice.name.includes('Natural'));
-                if (selectedVoice) utterance.voice = selectedVoice;
+            if (synth.speaking) synth.cancel();
 
-                utterance.rate = 1.05;
-                utterance.pitch = 0.9; 
-
-                utterance.onstart = () => setStatus('speaking');
-                utterance.onend = () => {
-                    setStatus('listening');
-                    if (isJarvisActive) recognition.start();
-                    resolve();
-                };
-
-                window.speechSynthesis.speak(utterance);
-            });
-        }
-
-        async function handleCommand(command) {
-            setStatus('thinking');
-            console.log("Processing command: " + command);
-
-            // Time
-            if (command.includes('time')) {
-                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                await speak(`The current time is ${time}.`);
-                return;
-            }
-
-            // Date
-            if (command.includes('date') || command.includes('day')) {
-                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                const date = new Date().toLocaleDateString('en-US', options);
-                await speak(`Today is ${date}.`);
-                return;
-            }
-
-            // Weather
-            if (command.includes('weather')) {
-                try {
-                    const weatherRes = await fetch('https://wttr.in/?format=j1');
-                    const weatherData = await weatherRes.json();
-                    const currentCondition = weatherData.current_condition[0];
-                    const temp = currentCondition.temp_C;
-                    const desc = currentCondition.weatherDesc[0].value;
-                    await speak(`The current local weather is ${desc} at ${temp} degrees Celsius.`);
-                } catch (error) {
-                    await speak("I am unable to access weather data at this moment.");
-                }
-                return;
-            }
-
-            // Stop/Sleep Command
-            if (command.includes('stop') || command.includes('sleep') || command.includes('shut down')) {
-                isJarvisActive = false;
-                startPrompt.style.display = 'block';
-                await speak("Powering down systems. Goodbye.");
-                return;
-            }
-
-            // Live Search Engine (Wikipedia API)
-            try {
-                // Remove trigger words like "search for" or "who is" to get a cleaner query
-                let searchQuery = command
-                    .replace('jarvis', '')
-                    .replace('search for', '')
-                    .replace('tell me about', '')
-                    .replace('who is', '')
-                    .replace('what is', '')
-                    .trim();
-
-                const response = await fetchLiveSearch(searchQuery);
-                await speak(response);
-            } catch (error) {
-                await speak("I encountered an issue connecting to the search network.");
-            }
-        }
-
-        // Real Search Integration using Wikipedia Open API
-        async function fetchLiveSearch(query) {
-            if (!query) return "Please specify what you would like me to search for.";
+            const utterance = new SpeechSynthesisUtterance(text);
             
-            try {
-                // Use the MediaWiki API to fetch a summary
-                const endpoint = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=&format=json&origin=*`;
-                const response = await fetch(endpoint);
-                const data = await response.json();
-                
-                if (data.query.search && data.query.search.length > 0) {
-                    // Extract the snippet of the first result
-                    let snippet = data.query.search[0].snippet;
-                    // Remove HTML elements from the snippet for clean voice reading
-                    let cleanText = snippet.replace(/<\/?[^>]+(>|$)/g, "");
-                    // Decode HTML entities (like &quot;)
-                    const txt = document.createElement("textarea");
-                    txt.innerHTML = cleanText;
-                    cleanText = txt.value;
-                    
-                    return `Here is what I found on the web: ${cleanText}`;
-                } else {
-                    return "I couldn't find any exact matches for that on the search network.";
-                }
-            } catch (error) {
-                console.error("Search API Error:", error);
-                throw error;
-            }
+            // Try to find a good robotic/British voice
+            const voices = synth.getVoices();
+            const premiumVoice = voices.find(v => v.name.includes("Google UK English Male") || v.name.includes("Natural"));
+            if (premiumVoice) utterance.voice = premiumVoice;
+
+            utterance.pitch = 0.85; // Deepen voice
+            utterance.rate = 1.05;
+
+            utterance.onstart = () => updateUIState('speaking');
+            utterance.onend = () => {
+                updateUIState('idle');
+                // Hide panels after 5 seconds of silence
+                setTimeout(() => {
+                    if(aiState === 'idle') {
+                        inputPanel.classList.remove('visible');
+                    }
+                }, 5000);
+            };
+
+            synth.speak(utterance);
         }
 
-        window.speechSynthesis.onvoiceschanged = () => {};
+        // Initialize voices (Chrome requires this to load them properly)
+        speechSynthesis.onvoiceschanged = () => synth.getVoices();
     </script>
 </body>
 </html>
