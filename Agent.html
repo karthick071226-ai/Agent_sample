@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS - Voice Assistant</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #05050a;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Futuristic Background Grid */
+        .grid {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                linear-gradient(rgba(0, 242, 254, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 242, 254, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            animation: grid-move 20s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes grid-move {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        }
+
+        /* Container for Jarvis Orb */
+        .assistant-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* The Jarvis Ball */
+        .jarvis-orb {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #00f2fe 0%, #4facfe 70%, #000 100%);
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.6),
+                        inset 0 0 20px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        /* Core inner glow */
+        .jarvis-orb::after {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 15%;
+            width: 70%;
+            height: 70%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 80%);
+        }
+
+        /* Idle State Pulse */
+        .status-idle {
+            animation: pulse-idle 3s infinite ease-in-out;
+        }
+
+        /* Listening State Pulse (Faster and Red/Orange tint or deeper Blue) */
+        .status-listening {
+            animation: pulse-listening 1s infinite ease-in-out;
+            background: radial-gradient(circle, #00f2fe 0%, #0052d4 70%, #000 100%);
+            box-shadow: 0 0 50px rgba(0, 242, 254, 0.9);
+        }
+
+        /* Speaking State Animation (Vibrating/Wavy) */
+        .status-speaking {
+            animation: speaking-wave 0.15s infinite linear;
+            background: radial-gradient(circle, #00f2fe 0%, #7f00ff 70%, #000 100%);
+            box-shadow: 0 0 60px rgba(127, 0, 255, 0.8);
+        }
+
+        /* Thinking State Animation */
+        .status-thinking {
+            animation: thinking-spin 1.5s infinite linear;
+            border: 4px dashed #00f2fe;
+        }
+
+        /* Animations */
+        @keyframes pulse-idle {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(0, 242, 254, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 45px rgba(0, 242, 254, 0.8); }
+        }
+
+        @keyframes pulse-listening {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(0, 242, 254, 0.6); }
+            50% { transform: scale(1.15); box-shadow: 0 0 60px rgba(0, 242, 254, 1); }
+        }
+
+        @keyframes speaking-wave {
+            0% { transform: scale(1.05) translate(1px, 1px); }
+            50% { transform: scale(1.08) translate(-1px, -1px); }
+            100% { transform: scale(1.05) translate(1px, -1px); }
+        }
+
+        @keyframes thinking-spin {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+
+        /* Click prompt overlay - hidden completely once active */
+        #start-prompt {
+            position: absolute;
+            color: rgba(0, 242, 254, 0.6);
+            bottom: -40px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid"></div>
+
+    <div class="assistant-container" id="assistant-trigger">
+        <div class="jarvis-orb status-idle" id="jarvis-ball"></div>
+        <div id="start-prompt">Click Orb to Initialize Jarvis</div>
+    </div>
+
+    <script>
+        // Setup speech components
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const jarvisBall = document.getElementById('jarvis-ball');
+        const trigger = document.getElementById('assistant-trigger');
+        const startPrompt = document.getElementById('start-prompt');
+
+        let recognition;
+        let isJarvisActive = false;
+
+        if (!SpeechRecognition) {
+            alert("Your browser does not support Web Speech API. Please use Google Chrome.");
+        } else {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                setStatus('listening');
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error", event.error);
+                setStatus('idle');
+            };
+
+            recognition.onend = () => {
+                // Keep listening active unless explicitly stopped
+                if (isJarvisActive) {
+                    recognition.start();
+                } else {
+                    setStatus('idle');
+                }
+            };
+
+            recognition.onresult = async (event) => {
+                const current = event.resultIndex;
+                const transcript = event.results[current][0].transcript.toLowerCase().trim();
+                
+                // Stop recognition temporarily while processing/speaking to avoid hearing itself
+                recognition.stop();
+                await handleCommand(transcript);
+            };
+        }
+
+        // Initialize Jarvis on Click
+        trigger.addEventListener('click', () => {
+            if (!isJarvisActive) {
+                isJarvisActive = true;
+                startPrompt.style.display = 'none';
+                speak("Jarvis systems online. How can I assist you, sir?");
+            }
+        });
+
+        // UI State Helper
+        function setStatus(state) {
+            jarvisBall.className = 'jarvis-orb'; // Reset classes
+            if (state === 'listening') jarvisBall.classList.add('status-listening');
+            else if (state === 'speaking') jarvisBall.classList.add('status-speaking');
+            else if (state === 'thinking') jarvisBall.classList.add('status-thinking');
+            else jarvisBall.classList.add('status-idle');
+        }
+
+        // Voice Output Engine
+        function speak(text) {
+            return new Promise((resolve) => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Try to find a professional/masculine/Google voice if available
+                const voices = window.speechSynthesis.getVoices();
+                const selectedVoice = voices.find(voice => voice.name.includes('Google US English') || voice.name.includes('Natural'));
+                if (selectedVoice) utterance.voice = selectedVoice;
+
+                utterance.rate = 1.05; // Slightly faster for immediate/crisp response
+                utterance.pitch = 0.9; // Lower pitch for a professional sound
+
+                utterance.onstart = () => {
+                    setStatus('speaking');
+                };
+
+                utterance.onend = () => {
+                    setStatus('listening');
+                    // Restart listening for the next command
+                    if (isJarvisActive) {
+                        recognition.start();
+                    }
+                    resolve();
+                };
+
+                window.speechSynthesis.speak(utterance);
+            });
+        }
+
+        // Command Router
+        async function handleCommand(command) {
+            setStatus('thinking');
+            console.log("Processing command: " + command);
+
+            // 1. Time Command
+            if (command.includes('time')) {
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                await speak(`The current time is ${time}.`);
+                return;
+            }
+
+            // 2. Date Command
+            if (command.includes('date') || command.includes('day')) {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const date = new Date().toLocaleDateString('en-US', options);
+                await speak(`Today is ${date}.`);
+                return;
+            }
+
+            // 3. Weather Command (Uses a free, no-auth geo IP and weather API for real-time local data)
+            if (command.includes('weather')) {
+                try {
+                    // Fetch weather based on rough open IP location
+                    const weatherRes = await fetch('https://wttr.in/?format=j1');
+                    const weatherData = await weatherRes.json();
+                    const currentCondition = weatherData.current_condition[0];
+                    const temp = currentCondition.temp_C;
+                    const desc = currentCondition.weatherDesc[0].value;
+                    
+                    await speak(`The current local weather is ${desc} at ${temp} degrees Celsius.`);
+                } catch (error) {
+                    await speak("I am unable to access weather data at this moment.");
+                }
+                return;
+            }
+
+            // 4. Default Search Engine / AI Backend Integration
+            // Replace the URL with your own live Node.js/Python server endpoint that queries Google Search or an LLM
+            try {
+                const response = await fetchBackendSearch(command);
+                await speak(response);
+            } catch (error) {
+                await speak("I encountered an issue connecting to my core database.");
+            }
+        }
+
+        // Simulated immediate Backend Search Engine function
+        // In your production setup, replace this with an actual API call to an LLM or Search API
+        async function fetchBackendSearch(query) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    // This is a placeholder responsive answer logic. 
+                    // Route to your server here: fetch('https://your-backend.com/api?q=' + encodeURIComponent(query))
+                    resolve(`I searched online for ${query}, but your backend search API is not connected yet. Please integrate your search engine endpoint in the code.`);
+                }, 400); // Low delay mock response
+            });
+        }
+
+        // Ensure voices load perfectly in Chrome
+        window.speechSynthesis.onvoiceschanged = () => {};
+    </script>
+</body>
+</html>
